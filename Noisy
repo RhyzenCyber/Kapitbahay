@@ -1,0 +1,125 @@
+#include <Wire.h>  // Required for I2C communication
+#include <LiquidCrystal_I2C.h>  // LCD library for I2C
+#include <Keypad.h>  // Keypad library for handling the 4x4 keypad
+
+// Define keypad constants (Adjust to match your wiring)
+const byte ROW_NUM    = 4;      // four rows
+const byte COL_NUM    = 4;      // four columns
+
+char keys[ROW_NUM][COL_NUM] = {    // Keypad layout
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte pin_rows[ROW_NUM] = {9, 8, 7, 6};   // Define the row pins
+byte pin_column[COL_NUM] = {5, 4, 3, 2}; // Define the column pins
+
+Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COL_NUM);  // Create the keypad object
+
+// LCD setup
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD address, 16 columns, 2 rows
+
+int currentMode = 0;  // Variable to track the current mode (0-3)
+
+void setup() {
+    Serial.begin(9600);  // Initialize Bluetooth communication at 9600 baud (HC-05 default)
+
+    // Initialize LCD
+    lcd.begin(16, 2);
+    lcd.backlight();  // Turn on the LCD backlight
+
+    // Display initial message on the LCD
+    lcd.setCursor(0, 0);
+    lcd.print("Mode: ");
+    lcd.setCursor(0, 1);
+    lcd.print("Press Key");
+}
+
+void loop() {
+    char key = keypad.getKey();  // Get the key pressed on the keypad
+
+    if (key) {  // If a key is pressed
+        handleModeChange(key);  // Handle the mode change based on key pressed
+    }
+
+    executeMode();  // Execute the functionality based on the current mode
+}
+
+void handleModeChange(char key) {
+    // Update the mode based on the key pressed (only process numeric keys for mode cycling)
+    if (key >= '0' && key <= '3') {
+        currentMode = key - '0';  // Convert char to int
+        Serial.print("Mode changed to: ");
+        Serial.println(currentMode);  // Print the mode to Serial Monitor for debugging
+        updateLCD();  // Update the LCD display with the new mode
+    }
+}
+
+void executeMode() {
+    switch (currentMode) {
+        case 0:
+            // Idle mode (no action)
+            delay(100);
+            break;
+        case 1:
+            jamBLE();  // Perform Bluetooth Low Energy jamming
+            break;
+        case 2:
+            jamBluetooth();  // Perform Classic Bluetooth jamming
+            break;
+        case 3:
+            jamAll();  // Perform either BLE or Classic Bluetooth jamming randomly
+            break;
+    }
+}
+
+void jamBLE() {
+    Serial.println("Jamming BLE...");  // Print a message to Serial Monitor
+    int randomIndex = random(0, sizeof(ble_channels) / sizeof(ble_channels[0]));
+    int channel = ble_channels[randomIndex];
+    radioVSPI.setChannel(channel);
+    radioHSPI.setChannel(channel);
+}
+
+void jamBluetooth() {
+    Serial.println("Jamming Bluetooth...");  // Print a message to Serial Monitor
+    int randomIndex = random(0, sizeof(bluetooth_channels) / sizeof(bluetooth_channels[0]));
+    int channel = bluetooth_channels[randomIndex];
+    radioVSPI.setChannel(channel);
+    radioHSPI.setChannel(channel);
+}
+
+void jamAll() {
+    // Randomly choose to either jam BLE or Bluetooth
+    if (random(0, 2)) {
+        jamBluetooth();  // Jam Bluetooth
+    } else {
+        jamBLE();  // Jam BLE
+    }
+}
+
+void updateLCD() {
+    lcd.clear();  // Clear the previous content on the LCD
+
+    // Display the current mode on the LCD
+    lcd.setCursor(0, 0);
+    lcd.print("Mode: ");
+
+    // Display the mode name based on the currentMode variable
+    switch (currentMode) {
+        case 0:
+            lcd.print("Idle");
+            break;
+        case 1:
+            lcd.print("BLE Jam");
+            break;
+        case 2:
+            lcd.print("BT Jam");
+            break;
+        case 3:
+            lcd.print("Random");
+            break;
+    }
+}
