@@ -1,6 +1,6 @@
-#include <Wire.h>  // Required for I2C communication
-#include <LiquidCrystal_I2C.h>  // LCD library for I2C
-#include <Keypad.h>  // Keypad library for handling the 4x4 keypad
+#include <Wire.h>               // Required for I2C communication
+#include <LiquidCrystal_I2C.h>   // LCD library for I2C
+#include <Keypad.h>              // Keypad library for handling the 4x4 keypad
 
 // Define keypad constants (Adjust to match your wiring)
 const byte ROW_NUM    = 4;      // four rows
@@ -22,6 +22,18 @@ Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COL_NUM)
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // LCD address, 16 columns, 2 rows
 
 int currentMode = 0;  // Variable to track the current mode (0-3)
+
+// Arrays for Bluetooth channels (assuming jamming purposes)
+int bluetooth_channels[] = {32, 34, 46, 48, 50, 52, 0, 1, 2, 4, 6, 8, 22, 24, 26, 28, 30, 74, 76, 78, 80};
+int ble_channels[] = {2, 26, 80};
+
+// Function prototypes
+void handleModeChange(char key);
+void executeMode();
+void jamBLE();
+void jamBluetooth();
+void jamAll();
+void updateLCD();
 
 void setup() {
     Serial.begin(9600);  // Initialize Bluetooth communication at 9600 baud (HC-05 default)
@@ -77,18 +89,12 @@ void executeMode() {
 
 void jamBLE() {
     Serial.println("Jamming BLE...");  // Print a message to Serial Monitor
-    int randomIndex = random(0, sizeof(ble_channels) / sizeof(ble_channels[0]));
-    int channel = ble_channels[randomIndex];
-    radioVSPI.setChannel(channel);
-    radioHSPI.setChannel(channel);
+    // Add BLE jamming code here, if applicable (this would be a placeholder for BLE jamming functionality)
 }
 
 void jamBluetooth() {
     Serial.println("Jamming Bluetooth...");  // Print a message to Serial Monitor
-    int randomIndex = random(0, sizeof(bluetooth_channels) / sizeof(bluetooth_channels[0]));
-    int channel = bluetooth_channels[randomIndex];
-    radioVSPI.setChannel(channel);
-    radioHSPI.setChannel(channel);
+    // Add Bluetooth jamming code here, if applicable (this would be a placeholder for Classic Bluetooth jamming)
 }
 
 void jamAll() {
