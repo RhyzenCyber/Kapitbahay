@@ -89,12 +89,18 @@ void executeMode() {
 
 void jamBLE() {
     Serial.println("Jamming BLE...");  // Print a message to Serial Monitor
-    // Add BLE jamming code here, if applicable (this would be a placeholder for BLE jamming functionality)
+    int randomIndex = random(0, sizeof(ble_channels) / sizeof(ble_channels[0]));
+    int channel = ble_channels[randomIndex];
+    radioVSPI.setChannel(channel);
+    radioHSPI.setChannel(channel);
 }
 
 void jamBluetooth() {
     Serial.println("Jamming Bluetooth...");  // Print a message to Serial Monitor
-    // Add Bluetooth jamming code here, if applicable (this would be a placeholder for Classic Bluetooth jamming)
+    int randomIndex = random(0, sizeof(bluetooth_channels) / sizeof(bluetooth_channels[0]));
+    int channel = bluetooth_channels[randomIndex];
+    radioVSPI.setChannel(channel);
+    radioHSPI.setChannel(channel);
 }
 
 void jamAll() {
